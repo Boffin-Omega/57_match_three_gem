@@ -158,6 +158,37 @@ class Board:
 
         return matched, bombs
 
+    def find_hint(self):
+        """Find an adjacent swap that produces a match."""
+        for r in range(GRID_SIZE):
+            for c in range(GRID_SIZE):
+
+                # Try swapping right
+                if c + 1 < GRID_SIZE:
+                    pos1 = (r, c)
+                    pos2 = (r, c + 1)
+
+                    self.swap_gems(pos1, pos2)
+                    matches, _ = self.find_matches()
+                    self.swap_gems(pos1, pos2)
+
+                    if matches:
+                        return pos1, pos2
+
+                # Try swapping down
+                if r + 1 < GRID_SIZE:
+                    pos1 = (r, c)
+                    pos2 = (r + 1, c)
+
+                    self.swap_gems(pos1, pos2)
+                    matches, _ = self.find_matches()
+                    self.swap_gems(pos1, pos2)
+
+                    if matches:
+                        return pos1, pos2
+
+        return None
+    
     def drop_and_refill(self):
         for c in range(GRID_SIZE):
             empty_slots = 0
@@ -275,7 +306,7 @@ class Board:
                 if self.grid[r][c]:
                     self.grid[r][c].update()
 
-    def render(self, surface):
+    def render(self, surface, hint_pair=None):
         board_rect = pygame.Rect(
             self.offset_x, self.offset_y, GRID_SIZE * TILE_SIZE, GRID_SIZE * TILE_SIZE
         )
@@ -316,3 +347,26 @@ class Board:
                     pygame.draw.rect(
                         surface, (255, 255, 255), sel_rect, width=4, border_radius=10
                     )
+        if hint_pair:
+            pulse = int(3 + 3 * abs(pygame.math.Vector2(
+                1, 0
+            ).rotate(pygame.time.get_ticks() * 0.2).x))
+
+            for r, c in hint_pair:
+                x = self.offset_x + c * TILE_SIZE
+                y = self.offset_y + r * TILE_SIZE
+
+                hint_rect = pygame.Rect(
+                    x + 5,
+                    y + 5,
+                    TILE_SIZE - 10,
+                    TILE_SIZE - 10
+                )
+
+                pygame.draw.rect(
+                    surface,
+                    (255, 255, 255),
+                    hint_rect,
+                    width=pulse,
+                    border_radius=10
+                )

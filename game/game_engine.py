@@ -1,4 +1,5 @@
 import pygame
+import time
 from game.board import Board, GRID_SIZE, TILE_SIZE
 
 
@@ -11,10 +12,16 @@ class GameEngine:
 
         self.board = Board(offset_x, offset_y, target_score=500, max_moves=20)
 
+        self.last_click_time = time.time()
+        self.hint_pair = None
+
         self.font_big = pygame.font.SysFont(None, 48)
         self.font_small = pygame.font.SysFont(None, 24)
 
     def handle_click(self, mouse_pos):
+        self.last_click_time = time.time()
+        self.hint_pair = None
+
         if self.board.is_game_over() or self.board.is_animating():
             return
 
@@ -42,6 +49,10 @@ class GameEngine:
     def update(self):
         self.board.update()
 
+        if time.time() - self.last_click_time > 5:
+            if self.hint_pair is None and not self.board.is_game_over():
+                self.hint_pair = self.board.find_hint()
+
     def render(self, screen):
         screen.fill((32, 34, 40))
 
@@ -54,7 +65,7 @@ class GameEngine:
         hud_surf = self.font_small.render(hud_text, True, (80, 220, 180))
         screen.blit(hud_surf, (self.width // 2 - hud_surf.get_width() // 2, 55))
 
-        self.board.render(screen)
+        self.board.render(screen, self.hint_pair)
 
         inst_surf = self.font_small.render(
             "Swap gems to match 3+. Press [R] to Restart.",
