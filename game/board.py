@@ -164,18 +164,18 @@ class Board:
             return False
 
         self.swap_gems(pos1, pos2)
-        matches = self.find_matches()
 
-        # BUG SYMPTOM:
-        # Move count decrements on EVERY swap attempt even invalid ones.
-        self.moves_remaining -= 1
+        matches = self.find_matches()
 
         if not matches:
             self.swap_gems(pos1, pos2)  # Revert invalid swap
             return False
 
+        self.moves_remaining -= 1
+
         cleared = self.resolve_matches()
         self.score += cleared * 10
+
         return True
 
     def is_game_over(self):
