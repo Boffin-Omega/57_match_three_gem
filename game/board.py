@@ -122,21 +122,29 @@ class Board:
         return matched
 
     def drop_and_refill(self):
+        for c in range(GRID_SIZE):
             empty_slots = 0
+
+            # Move existing gems downward
             for r in range(GRID_SIZE - 1, -1, -1):
                 if self.grid[r][c] is None:
                     empty_slots += 1
                 elif empty_slots > 0:
                     gem = self.grid[r][c]
+
                     gem.target_row = r + empty_slots
                     gem.target_y = (r + empty_slots) * TILE_SIZE
+
                     self.grid[r + empty_slots][c] = gem
                     self.grid[r][c] = None
 
+            # Create new gems at the top
             for r in range(empty_slots):
                 color = random.choice(GEM_COLORS)
                 gem = Gem(color, r, c)
+
                 gem.current_y = -((empty_slots - r) * TILE_SIZE)
+
                 self.grid[r][c] = gem
 
     def resolve_matches(self):
